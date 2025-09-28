@@ -9,11 +9,11 @@ const Variables =
 	AppTitleAdmin: "App for Admin",
 
 	AppThumbnail: "",
-	AppAssets: isProduction ? "https://assets.agapedimas.com" : "http://localhost:1202",
+	AppAssets: "https://assets.agapedimas.com",
 	
 	WebHost: "https://app.agapedimas.com",
 	WebHomepage: "/home",
-	WebPing: isProduction ? "https://app.agapedimas.com/ping" : "http://localhost:7199/ping",
+	WebPing: "https://app.agapedimas.com/ping",
 }
 
 module.exports = Variables;
