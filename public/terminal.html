@@ -140,6 +140,7 @@
     ws = new WebSocket('ws://localhost:3000');
 
     ws.onopen = () => {
+        Input_Command.disabled = false;
     };
 
     ws.onmessage = event => {
@@ -148,11 +149,17 @@
     };
 
     ws.onerror = error => {
-        appendOutput('Terjadi error pada koneksi WebSocket.', "event");
+        appendOutput('Something went wrong. Reconnecting...', "event");
+        setTimeout(function(){ 
+            ws = new WebSocket('ws://localhost:3000');
+        }, 3000);
     };
 
     ws.onclose = () => {
-        appendOutput('Koneksi WebSocket terputus.', "event");
+        appendOutput("Connection closed. Reconnecting...", "event");
+        setTimeout(function(){ 
+            ws = new WebSocket('ws://localhost:3000');
+        }, 3000);
         Input_Command.disabled = true;
     };
 </script>
