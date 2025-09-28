@@ -19,7 +19,7 @@
             display: grid;
             grid-template-areas: 
                 "username command"
-                "output output"
+                "x output"
             ;
             grid-auto-columns: max-content auto;
             gap: 10px;
@@ -30,14 +30,14 @@
         {
             grid-template-areas: 
                 "username command progressring"
-                "output output output"
+                "x output output"
             ;
-            grid-auto-columns: 4.5em minmax(0, max-content) 20px;
+            grid-auto-columns: max-content minmax(0, max-content)  20px;
         }
             .terminal .command:before
             {
                 grid-area: username;
-                content: attr(path);
+                content: '>';
                 color: var(--foreground-description);
             }
                 .terminal .command textarea,
@@ -143,9 +143,8 @@
     };
 
     ws.onmessage = event => {
-        console.log(event);
-        let message = event.data;
-        appendOutput(message);
+        if (message.trim() != "")
+            appendOutput(message);
     };
 
     ws.onerror = error => {
@@ -154,5 +153,6 @@
 
     ws.onclose = () => {
         appendOutput('Koneksi WebSocket terputus.', "event");
+        Input_Command.disabled = true;
     };
 </script>
