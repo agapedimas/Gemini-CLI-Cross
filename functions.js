@@ -213,48 +213,42 @@ const Functions =
 
 		wss.on("connection", function(ws, req) 
 		{		
-			ws.send("Connecting to Gemini...")
-			
-			const gemini = spawn("gemini", ["chat"], { shell: true, detached: false });
-			gemini.stdin.write("halo" + "\n");
-
-			gemini.stdout.on('data', (data) => 
-			{
-				const output = data.toString();
-				console.log("Di server, diterima dari stdout:", output.trim()); // log di server
-
-				// 💡 PERIKSA SEBELUM MENGIRIM!
-				if (ws.readyState === WebSocket.OPEN) {
-					try {
-						ws.send(output);
-					} catch (e) {
-						console.error("Gagal mengirim pesan WebSocket:", e);
-					}
-				} else {
-					console.warn("Mencoba mengirim, tetapi WebSocket tidak dalam status OPEN. Status saat ini:", ws.readyState);
-				}
-			});
-
-			gemini.on('error', (err) => {
-				console.error(err);
-				// ws.close();
-			});
-
-			gemini.on('close', (code) => {
-				console.log(code);
-				// ws.close();
-			});
-
 			ws.on("message", function(message)
 			{
 				message = message.toString();
-				gemini.stdin.write(message + "\n");
-				gemini.stdin.end();
+				
+				const gemini = spawn("gemini", ["-p \""+ message +"\""], { shell: true, detached: false });
+
+				gemini.stdout.on('data', (data) => 
+				{
+					const output = data.toString();
+					console.log("Di server, diterima dari stdout:", output.trim()); // log di server
+
+					// 💡 PERIKSA SEBELUM MENGIRIM!
+					if (ws.readyState === WebSocket.OPEN) {
+						try {
+							ws.send(output);
+						} catch (e) {
+							console.error("Gagal mengirim pesan WebSocket:", e);
+						}
+					} else {
+						console.warn("Mencoba mengirim, tetapi WebSocket tidak dalam status OPEN. Status saat ini:", ws.readyState);
+					}
+				});
+
+				gemini.on('error', (err) => {
+					console.error(err);
+					// ws.close();
+				});
+
+				gemini.on('close', (code) => {
+					console.log(code);
+					// ws.close();
+				});
 			});
 
 			ws.on("close", function() 
 			{
-				gemini.kill();
 			});
 
 			ws.on("error", function(err) 
