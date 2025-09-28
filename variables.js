@@ -12,7 +12,7 @@ const Variables =
 	AppAssets: "https://assets.agapedimas.com",
 	
 	WebHost: "https://app.agapedimas.com",
-	WebHomepage: "/home",
+	WebHomepage: "/terminal",
 	WebPing: "https://app.agapedimas.com/ping",
 }
 

@@ -3,6 +3,8 @@ const Variables = require("./variables");
 const Template = require("./template");
 const Language = require("./language");
 const Axios = require("axios");
+const { spawn } = require("child_process");
+const WebSocket = require("ws");
 
 const Functions =
 {
@@ -204,6 +206,56 @@ const Functions =
 
 		return body;
 	},
+	
+	Server_WebsocketStart: function(Server)
+	{
+		const wss = new WebSocket.Server({ server: Server });
+
+		wss.on("connection", function(ws, req) 
+		{		
+			const gemini = spawn("cmd");
+			gemini.stdout.on('data', (data) => 
+			{
+				const output = data.toString();
+				console.log(`Mengirim ke client: ${output.trim()}`);
+				ws.send(output);
+			});
+
+			gemini.stderr.on('data', (data) => {
+				const errorOutput = data.toString();
+				ws.send(`[ERROR]: ${errorOutput}`);
+			});
+
+			gemini.on('close', (code) => {
+				console.log(code);
+				ws.send(code);
+			});
+
+			ws.on("message", function(message)
+			{
+				message = message.toString();
+				gemini.stdin.write(message + "\n");
+			});
+
+			ws.on("close", function() 
+			{
+				gemini.kill();
+			});
+
+			ws.on("error", function(err) 
+			{
+				console.error(err);
+			});
+		});
+		
+		wss.on('error', error => {
+		console.error('WebSocket Server Error (saat handshake atau internal):', error);
+		// Ini bakal nangkap error yang mungkin terjadi di level WS server
+		// misalnya ada masalah dengan port, atau internal ws library
+		});
+		
+		console.log("WebSocket is ready");
+	},
 	/**
 	 * Listens to all registered routes
 	 * @param { import("express").Application } Server Express instance
@@ -211,7 +263,7 @@ const Functions =
 	 */
 	Server_Start: function (Server)
 	{
-		Server.listen(3000, () =>  
+		const server = Server.listen(3000, () =>  
 		{
 			if (Variables.Production)
 			{
@@ -223,6 +275,8 @@ const Functions =
 				console.error("This server is running under development mode. Please switch to production as soon as possible since it's vulnerable.");
 			}
 		});
+		
+		Functions.Server_WebsocketStart(server);
 	}
 }
 

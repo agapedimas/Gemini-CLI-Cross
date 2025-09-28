@@ -19,6 +19,7 @@
 		"jimp": "^1.6.0",
 		"mysql": "^2.18.1",
 		"mysql2": "^3.15.1",
-		"webp-converter": "^2.3.3"
+		"webp-converter": "^2.3.3",
+		"ws": "^8.18.3"
 	}
 }
