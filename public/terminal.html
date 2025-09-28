@@ -121,7 +121,7 @@
 
         const command = document.createElement("div");
         command.classList.add("command");
-        command.setAttribute("path", last_path || "");
+        command.setAttribute("path", last_path || ">");
         Input_Command.parentNode.setAttribute("path", last_path || "");
         
         if (type == "output")
@@ -143,12 +143,9 @@
     };
 
     ws.onmessage = event => {
+        console.log(event);
         let message = event.data;
-        
-        if (message.trim().split("\n")[0].endsWith(">"))
-            last_path = message.trim().split("\n")[0];
-        else
-            appendOutput(message);
+        appendOutput(message);
     };
 
     ws.onerror = error => {

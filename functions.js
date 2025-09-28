@@ -213,28 +213,43 @@ const Functions =
 
 		wss.on("connection", function(ws, req) 
 		{		
-			const gemini = spawn("cmd");
+			ws.send("Connecting to Gemini...")
+			
+			const gemini = spawn("gemini", ["chat"], { shell: true, detached: false });
+			gemini.stdin.write("halo" + "\n");
+
 			gemini.stdout.on('data', (data) => 
 			{
 				const output = data.toString();
-				console.log(`Mengirim ke client: ${output.trim()}`);
-				ws.send(output);
+				console.log("Di server, diterima dari stdout:", output.trim()); // log di server
+
+				// 💡 PERIKSA SEBELUM MENGIRIM!
+				if (ws.readyState === WebSocket.OPEN) {
+					try {
+						ws.send(output);
+					} catch (e) {
+						console.error("Gagal mengirim pesan WebSocket:", e);
+					}
+				} else {
+					console.warn("Mencoba mengirim, tetapi WebSocket tidak dalam status OPEN. Status saat ini:", ws.readyState);
+				}
 			});
 
-			gemini.stderr.on('data', (data) => {
-				const errorOutput = data.toString();
-				ws.send(`[ERROR]: ${errorOutput}`);
+			gemini.on('error', (err) => {
+				console.error(err);
+				// ws.close();
 			});
 
 			gemini.on('close', (code) => {
 				console.log(code);
-				ws.send(code);
+				// ws.close();
 			});
 
 			ws.on("message", function(message)
 			{
 				message = message.toString();
 				gemini.stdin.write(message + "\n");
+				gemini.stdin.end();
 			});
 
 			ws.on("close", function() 
@@ -248,10 +263,11 @@ const Functions =
 			});
 		});
 		
-		wss.on('error', error => {
-		console.error('WebSocket Server Error (saat handshake atau internal):', error);
-		// Ini bakal nangkap error yang mungkin terjadi di level WS server
-		// misalnya ada masalah dengan port, atau internal ws library
+		wss.on("error", error => 
+		{
+			console.error('WebSocket Server Error (saat handshake atau internal):', error);
+			// Ini bakal nangkap error yang mungkin terjadi di level WS server
+			// misalnya ada masalah dengan port, atau internal ws library
 		});
 		
 		console.log("WebSocket is ready");
